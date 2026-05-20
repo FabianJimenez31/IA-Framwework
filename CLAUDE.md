@@ -27,3 +27,11 @@ This document guides developers and AI assistants (Claude, GPT, Gemini, etc.) wo
 3. **Develop & Implement:** Write clean code. Track progress in `tasks.md`.
 4. **Local Verification:** Execute `make dev-check` and `make test` to ensure hooks and tests are fully functional.
 5. **Push and PR:** Push branch, open Pull Request, ensure CI quality gates are fully green, merge, and clean up.
+
+## ⏩ Operations & Emergency Procedures
+
+- **Database-Code Enum Sincronización:** Run `make validate-enums` to verify that real database records are fully aligned with raw code Enum specifications before merging.
+- **Nginx Config Sanity Gate:** Run `make lint-nginx` to check active configurations and prevent localhost upstream networking bugs in routing layers.
+- **Frontend SPA Deploy Smoke Tester:** Run `make smoke-test` after deployment to ensure that all endpoints are live, bundles are responsive, and chunk versions are atomic (no partial deploys).
+- **Incident & Emergency Hotfixes:** In production crises, declare structured hotfixes with `make hotfix`. It automatically generates documentation templates in `temp/emergency_logs/`, captures safety state snapshots in `temp/backup/`, and activates the `HARNESS_EMERGENCY=1` bypass.
+- **Atomic Rollback & Recovery:** Revert broken changes with `make rollback`. It lists git safety tags and workspace patches. Run `scripts/deployment/rollback.sh apply <target>` to safely restore workspace state.

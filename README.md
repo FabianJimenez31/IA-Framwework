@@ -16,7 +16,12 @@ Perfect for modern engineering teams and developers paired with AI coding assist
     *   Scans diffs for hardcoded secrets, api keys, and private tokens.
     *   Forces cleanup of temporary Python/shell scripts in the repository root.
 *   **Boilerplate CI/CD Quality Gates:** Generic GitHub Actions workflows to validate file sizes, branch naming, and run automated test suites on every Pull Request.
-*   **Developer CLI API:** A clean `Makefile` providing standard endpoints for all workflow tasks.
+*   **Advanced Operations & Harness Suite:**
+    *   **Nginx Upstream Linter:** Blocks IPv6 connection lottery hazards in proxy/upstream routing configurations (localhost loops).
+    *   **Frontend SPA Smoke Tester:** Guarantees atomic deployment states, ensuring that all SPA routes are up and reference identical static bundle versions.
+    *   **Database-Enum Integrity Checker:** Performs set checks between code Enums and raw database distinct records to avoid runtime data degradation.
+    *   **Structured Incident & Hotfix Pipelines:** Standardizes emergency responses with automated backups, local testing gates, rollback tags, and incident documentation logs.
+*   **Developer CLI API & Pre-Commit Config:** A clean `Makefile` and `.pre-commit-config.yaml` providing standard endpoints for all local quality gates and workflow tasks.
 
 ---
 
@@ -30,10 +35,16 @@ Perfect for modern engineering teams and developers paired with AI coding assist
 ├── .claude/                          # 🤖 AI Agent Safeguards & Git Hooks
 │   └── hooks/                        # Pre/Post hooks & hook wrappers
 ├── .github/workflows/                # 🔗 CI/CD pipeline quality gates
+├── scripts/                          # ⏩ Custom project-specific validation & ops
+│   ├── validation/                   # Architecture & Database-enum consistency validators
+│   ├── harness/                      # Web server & Deployment smoke checkers
+│   └── deployment/                   # Standard emergency hotfix & rollback scripts
 ├── temp/                             # 📂 Organized playground for scrap/logs
+├── .pre-commit-config.yaml          # 🔗 Git pre-commit framework config
 ├── Makefile                          # Unified CLI commands for developers
 ├── install.sh                        # One-click interactive installer
 ├── CLAUDE.md                         # Reference project constitution for AI
+├── AGENTS.md                         # Reference mirror for other AI assistants
 └── README.md                         # This file
 ```
 
@@ -51,7 +62,7 @@ To integrate **IA-Framework** into any existing or new project:
     ```
     This script will:
     *   Initialize Git (if not already done).
-    *   Establish folders (`specs/`, `temp/`, `src/`, `tests/`).
+    *   Establish folders (`specs/`, `temp/`, `src/`, `tests/`, `scripts/`).
     *   Automatically bind local Git hooks to `.claude/hooks/git` using Git `core.hooksPath`.
     *   Populate the `.gitignore` with standard rules.
     *   Generate your `CLAUDE.md` and `AGENTS.md` constitution guidelines.
@@ -89,10 +100,63 @@ Before committing, verify that your changes pass all local hooks:
 ```bash
 make dev-check
 ```
-*   This will check branch naming, verify that spec files exist, scan for secrets, and block files that exceed 1000 lines.
+*   This will check branch naming, verify that spec files exist, scan for secrets, run the Python architecture anti-pattern scanner, and block files that exceed 1000 lines.
 
 ### 5. Push & Pull Request
 Push your branch and open a Pull Request. The **CI Quality Gate** will automatically run remote checks. Once green, merge to `main` and enjoy clean, high-quality code!
+
+---
+
+## ⏩ Operations & Emergency Procedures
+
+IA-Framework comes preloaded with production-tested developer operations scripts.
+
+### 📊 Database-Code Enum Validation
+To check database record consistency vs. code Enum classes, run:
+```bash
+make validate-enums
+```
+This runs `scripts/validation/validate_enums.py`, which computes exact set differences and suggests updates before discrepancies cause validation crashes.
+
+### 🌐 Nginx Config Upstream Linter
+To verify active Nginx sites and prevent the IPv6/IPv4 localhost connection lottery bug, run:
+```bash
+make lint-nginx
+```
+This runs `scripts/harness/lint_nginx.sh` to parse configs and enforce explicit IP targets (`127.0.0.1`).
+
+### 📦 Frontend SPA Smoke Testing
+To run an automated post-deploy smoke test checking route status and JS chunk versions compatibility (atomic checks), run:
+```bash
+make smoke-test
+```
+This runs `scripts/harness/smoke_test_frontend.sh`. You can configure it by setting environment variables:
+```bash
+BASE_URL=https://myprodapp.com ROUTES="/ /dashboard /admin" make smoke-test
+```
+
+### 🚨 Structured Production Emergency Hotfix
+When production is down and normal staging review stages must be bypassed, run:
+```bash
+make hotfix
+```
+This will run the interactive hotfix initializer `scripts/deployment/emergency_hotfix.sh crear`:
+1.  **Safety Snapshots:** Saves dirty changes into `temp/backup/`.
+2.  **Incident Documentation:** Creates a post-mortem Markdown template in `temp/emergency_logs/` so that fixes are documented.
+3.  **Emergency Validation:** Run `scripts/deployment/emergency_hotfix.sh validar` to run local tests.
+4.  **Bypass Action:** Run `scripts/deployment/emergency_hotfix.sh aplicar` to commit/push the fix using the `HARNESS_EMERGENCY=1` bypass.
+
+### ⏪ Atomic Local & Git Rollback
+If a hotfix or deploy causes unforeseen regressions, run:
+```bash
+make rollback
+```
+This runs `scripts/deployment/rollback.sh list` to display all git rollback safety tags and local snapshots.
+To apply a rollback, execute:
+```bash
+./scripts/deployment/rollback.sh apply <tag_or_patch_file>
+```
+This safely reverts files while capturing a safety backup of your current state.
 
 ---
 

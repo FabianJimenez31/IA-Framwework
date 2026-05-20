@@ -35,13 +35,16 @@ fi
 # 2. Make directories
 echo -e "${BLUE}[INFO] Setting up directory structures...${NC}"
 mkdir -p specs
-mkdir -p temp/debug temp/patches temp/testing
+mkdir -p temp/debug temp/patches temp/testing temp/backup temp/emergency_logs
 mkdir -p src tests
+mkdir -p scripts/validation scripts/harness scripts/deployment
 
 # 3. Configure file permissions
 echo -e "${BLUE}[INFO] Configuring execute permissions for scripts...${NC}"
 find .specify/scripts/bash/ -type f -name "*.sh" -exec chmod +x {} \; || true
 find .claude/hooks/ -type f -name "*.sh" -exec chmod +x {} \; || true
+find scripts/ -type f -name "*.sh" -exec chmod +x {} \; || true
+find scripts/ -type f -name "*.py" -exec chmod +x {} \; || true
 chmod +x .claude/hooks/git/pre-commit || true
 chmod +x .claude/hooks/git/pre-push || true
 chmod +x sonar_local.sh || true

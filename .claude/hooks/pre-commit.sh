@@ -72,6 +72,18 @@ if [ -n "$secrets" ]; then
     ERRORS=$((ERRORS + 1))
 fi
 
+# 6. Validate Project Structure & Anti-Patterns
+if [ -f "scripts/validation/validate_structure.py" ]; then
+    if command -v python3 >/dev/null 2>&1; then
+        echo -e "${YELLOW}   Running automated architecture validation...${NC}"
+        if ! python3 scripts/validation/validate_structure.py; then
+            ERRORS=$((ERRORS + 1))
+        fi
+    else
+        echo -e "${YELLOW}   ⚠️  python3 not found; skipping architecture validation.${NC}"
+    fi
+fi
+
 if [ "$ERRORS" -gt 0 ]; then
     echo -e "${RED}❌ pre-commit Quality Gate FAILED ($ERRORS errors detected)${NC}"
     exit 1
