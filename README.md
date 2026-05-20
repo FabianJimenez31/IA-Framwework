@@ -96,6 +96,28 @@ Push your branch and open a Pull Request. The **CI Quality Gate** will automatic
 
 ---
 
+## 📊 SonarQube Quality Gate
+
+**IA-Framework** features a robust out-of-the-box **SonarQube Quality Gate** integration to measure bugs, code smells, vulnerabilities, security hotspots, and unit test coverage in both local and remote environments.
+
+### 🛡️ Remote Quality Gate (CI)
+On Pull Request creation, the CI action `.github/workflows/ci-quality-gate.yml` will automatically trigger a SonarQube Scanner scan. It enforces remote verification of the Quality Gate, blocking PR merges if the status is red (using secret values `SONAR_HOST_URL` and `SONAR_TOKEN`).
+
+### 💻 Local Quality Gate (Developer Sandbox)
+You do not need to wait for remote CI/CD pipelines to know if your changes will pass the SonarQube Quality Gate. Run the local gate command:
+```bash
+make sonar-check
+```
+This command runs:
+1.  **Test Coverage Collection:** Executes tests generating `coverage.xml`.
+2.  **Local Sonar Scan:** Triggers a Dockerized `sonar-scanner-cli` to analyze source files and publish metrics locally or to a shared SonarQube server.
+3.  **Project Status API Poll:** Queries the SonarQube project status API to check if it's `OK` or `ERROR`.
+4.  **Error Diagnostics:** Prints a colorized report displaying failed conditions, code issues, severity, and files with uncovered code.
+
+To customize Sonar scanner properties (e.g. project name, file inclusions/exclusions, source path), edit `sonar-project.properties` in your repository root.
+
+---
+
 ## 📄 License
 
 This framework is open-source software licensed under the [MIT License](LICENSE).

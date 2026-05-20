@@ -25,18 +25,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install jq
+        pip install jq pytest pytest-cov
 
     - name: Run File Size Enforcement Check
       run: |
-        # Run check-file-size.sh on all modified python and shell files in the commit diff
         echo "Running quality checks on file sizes..."
         chmod +x .claude/hooks/check-file-size.sh
-        
-        # Loop through modified files and pipe simulated jq inputs to check-file-size.sh
         for file in $(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null || true); do
           if [ -f "$file" ]; then
-            # Ensure jq doesn't crash on invalid inputs
             jq -n --arg path "$file" '{"tool_input":{"file_path":$path}}' | bash .claude/hooks/check-file-size.sh
           fi
         done
@@ -44,15 +40,40 @@ jobs:
     - name: Run Commit Convention Compliance
       run: |
         chmod +x .claude/hooks/pre-commit.sh
-        # Run pre-commit checks to simulate hooks remotely
         bash .claude/hooks/pre-commit.sh
 
-    - name: Run Test Suite
+    - name: Run Test Suite with Coverage
       run: |
-        # Run pytest or other tests if they are configured
         if [ -f "pytest.ini" ] || [ -d "tests" ]; then
-          pip install pytest pytest-cov
-          pytest tests/ -v
+          pytest --cov=src --cov-report=xml
         else
-          echo "No automated tests found, skipping tests run."
+          echo "No tests found. Generating dummy coverage.xml..."
+          echo '<?xml version="1.0" ?><coverage version="1.0"></coverage>' > coverage.xml
         fi
+
+    - name: Check SonarQube Secrets Presence
+      id: sonar-secrets
+      run: |
+        if [ -z "${{ secrets.SONAR_HOST_URL }}" ] || [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+          echo "available=false" >> $GITHUB_OUTPUT
+          echo "::warning::SonarQube credentials missing. Skipping Sonar Quality Gate."
+        else
+          echo "available=true" >> $GITHUB_OUTPUT
+        fi
+
+    # Run SonarQube Scan if credentials are set up
+    - name: SonarQube Scan
+      if: steps.sonar-secrets.outputs.available == 'true'
+      uses: SonarSource/sonarqube-scan-action@v3
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+    # Fail the build if the Quality Gate is failing (red status)
+    - name: SonarQube Quality Gate Check
+      if: steps.sonar-secrets.outputs.available == 'true'
+      uses: SonarSource/sonarqube-quality-gate-action@v2
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

@@ -44,6 +44,7 @@ find .specify/scripts/bash/ -type f -name "*.sh" -exec chmod +x {} \; || true
 find .claude/hooks/ -type f -name "*.sh" -exec chmod +x {} \; || true
 chmod +x .claude/hooks/git/pre-commit || true
 chmod +x .claude/hooks/git/pre-push || true
+chmod +x sonar_local.sh || true
 
 # 4. Install Git Hooks
 echo -e "${BLUE}[INFO] Binding Git Hooks using core.hooksPath...${NC}"

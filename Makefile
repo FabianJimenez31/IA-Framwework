@@ -1,15 +1,16 @@
 # Makefile for IA-Framework Quality Gate Harness
 
-.PHONY: init-harness dev-check spec-new test clean help
+.PHONY: init-harness dev-check spec-new test clean sonar-check help
 
 help:
 	@echo "======================================================================"
 	@echo "IA-Framework Developer CLI Commands:"
 	@echo "======================================================================"
 	@echo "  make init-harness   - Install Git hooks and initialize directory structure"
-	@echo "  make dev-check       - Run local pre-commit checks (simulate Git hooks)"
+	@echo "  make dev-check      - Run local pre-commit checks (simulate Git hooks)"
 	@echo "  make spec-new       - Interactively create a new spec-driven feature branch"
 	@echo "  make test           - Execute automated test suite"
+	@echo "  make sonar-check    - Execute local SonarQube scanner & Quality Gate check"
 	@echo "  make clean          - Run smart cleanup of temporary log and backup files"
 	@echo "======================================================================"
 
@@ -31,6 +32,10 @@ test:
 	else \
 		echo "pytest not installed. Create a virtual environment and run 'pip install pytest'."; \
 	fi
+
+sonar-check:
+	@chmod +x sonar_local.sh
+	@bash sonar_local.sh
 
 clean:
 	@chmod +x .claude/hooks/smart-cleanup.sh
