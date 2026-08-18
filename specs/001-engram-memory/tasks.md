@@ -7,6 +7,7 @@ Use this document as a living checklist of technical items to implement. Mark it
 ## Implementation Tasks
 
 - [x] **Phase 0: Corregir deuda preexistente** *(bloquea las fases siguientes)*
+  - [x] DP-005 — Corregir `sonarqube-quality-gate-action@v2` a `@v1` en `ci-quality-gate.yml`; esa acción no publica una v2 y el job fallaba al preparar el workflow
   - [x] DP-004 — Reemplazar `fi` por `done` en `check-prerequisites.sh:93`; validar con `bash -n` y confirmar que `spec-compliance.yml` pasa por primera vez
   - [x] DP-002 — Alimentar `check-file-size.sh` con stdin JSON en `emergency_hotfix.sh:108`, replicando el patrón de `ci-quality-gate.yml:36`
   - [x] DP-001 — Implementar `HARNESS_EMERGENCY=1` como archivo de estado leído por los hooks, en lugar del `export` a subshell de `emergency_hotfix.sh:129`

@@ -100,7 +100,7 @@ jobs:
     # Fail the build if the Quality Gate is failing (red status)
     - name: SonarQube Quality Gate Check
       if: steps.sonar-secrets.outputs.available == 'true'
-      uses: SonarSource/sonarqube-quality-gate-action@v2
+      uses: SonarSource/sonarqube-quality-gate-action@v1
       timeout-minutes: 5
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
