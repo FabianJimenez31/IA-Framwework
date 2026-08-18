@@ -32,8 +32,26 @@ if [ "$EMERGENCY" -eq 1 ]; then
 fi
 ERRORS=0
 
+# On pull requests, actions/checkout leaves a detached HEAD, so the branch name
+# reads back as the literal string "HEAD" and every branch rule fails or, worse,
+# passes vacuously. GitHub exposes the real source branch in GITHUB_HEAD_REF.
+resolve_branch_name() {
+    local name="$1"
+    if [ "$name" = "HEAD" ]; then
+        if [ -n "${GITHUB_HEAD_REF:-}" ]; then
+            printf '%s\n' "$GITHUB_HEAD_REF"
+            return 0
+        fi
+        if [ -n "${GITHUB_REF_NAME:-}" ]; then
+            printf '%s\n' "$GITHUB_REF_NAME"
+            return 0
+        fi
+    fi
+    printf '%s\n' "$name"
+}
+
 # 1. Block direct commit to protected branches
-current_branch=$(git rev-parse --abbrev-ref HEAD)
+current_branch="$(resolve_branch_name "$(git rev-parse --abbrev-ref HEAD)")"
 if [ "$EMERGENCY" -eq 0 ]; then
     case "$current_branch" in
         main|master|prod|staging|develop)

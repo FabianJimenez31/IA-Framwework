@@ -27,7 +27,7 @@ CURRENT_BRANCH="main"
 
 if has_git; then
     HAS_GIT_REPO="true"
-    CURRENT_BRANCH=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)
+    CURRENT_BRANCH="$(resolve_branch_name "$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)")"
 fi
 
 # Skip checks for protected or common branches

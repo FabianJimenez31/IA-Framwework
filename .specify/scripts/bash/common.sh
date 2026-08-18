@@ -49,6 +49,24 @@ has_git() {
     git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1
 }
 
+# On pull requests, actions/checkout leaves a detached HEAD, so the branch name
+# reads back as the literal string "HEAD". Without this, spec prerequisites pass
+# vacuously in CI: nothing matches ^feature/ so nothing is ever validated.
+resolve_branch_name() {
+    local name="$1"
+    if [ "$name" = "HEAD" ]; then
+        if [ -n "${GITHUB_HEAD_REF:-}" ]; then
+            printf '%s\n' "$GITHUB_HEAD_REF"
+            return 0
+        fi
+        if [ -n "${GITHUB_REF_NAME:-}" ]; then
+            printf '%s\n' "$GITHUB_REF_NAME"
+            return 0
+        fi
+    fi
+    printf '%s\n' "$name"
+}
+
 # Resolve effective branch name (strip prefix segment like feature/001-login -> 001-login)
 spec_kit_effective_branch_name() {
     local raw="$1"
