@@ -1,6 +1,6 @@
 # Makefile for IA-Framework Quality Gate Harness
 
-.PHONY: init-harness dev-check spec-new test clean sonar-check lint-nginx smoke-test validate-enums hotfix rollback help
+.PHONY: init-harness dev-check spec-new test clean sonar-check lint-nginx smoke-test validate-enums hotfix emergency-clear rollback help
 
 help:
 	@echo "======================================================================"
@@ -14,6 +14,7 @@ help:
 	@echo "  make smoke-test     - [NEW] Run SPA deployment atomicity smoke tests"
 	@echo "  make validate-enums - [NEW] Run code enums vs database values validator"
 	@echo "  make hotfix         - [NEW] Declare and organize structured emergency hotfix"
+	@echo "  make emergency-clear- [NEW] Clear the emergency bypass and re-arm all gates"
 	@echo "  make rollback       - [NEW] List rollback safe points or revert changes"
 	@echo "  make sonar-check    - Execute local SonarQube scanner & Quality Gate check"
 	@echo "  make clean          - Run smart cleanup of temporary log and backup files"
@@ -52,6 +53,10 @@ validate-enums:
 hotfix:
 	@chmod +x scripts/deployment/emergency_hotfix.sh
 	@bash scripts/deployment/emergency_hotfix.sh crear
+
+emergency-clear:
+	@chmod +x scripts/deployment/emergency_hotfix.sh
+	@bash scripts/deployment/emergency_hotfix.sh limpiar
 
 rollback:
 	@chmod +x scripts/deployment/rollback.sh

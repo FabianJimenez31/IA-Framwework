@@ -144,7 +144,8 @@ This will run the interactive hotfix initializer `scripts/deployment/emergency_h
 1.  **Safety Snapshots:** Saves dirty changes into `temp/backup/`.
 2.  **Incident Documentation:** Creates a post-mortem Markdown template in `temp/emergency_logs/` so that fixes are documented.
 3.  **Emergency Validation:** Run `scripts/deployment/emergency_hotfix.sh validar` to run local tests.
-4.  **Bypass Action:** Run `scripts/deployment/emergency_hotfix.sh aplicar` to commit/push the fix using the `HARNESS_EMERGENCY=1` bypass.
+4.  **Bypass Action:** Run `scripts/deployment/emergency_hotfix.sh aplicar` to commit/push the fix under the emergency bypass. The bypass is written to `temp/.harness_emergency` with a 2-hour TTL so the git hooks — which run as separate processes — actually observe it. It suspends workflow gates only; secret scanning and file-size limits remain enforced.
+5.  **Re-arm:** Run `make emergency-clear` once the incident is closed to restore every quality gate.
 
 ### ⏪ Atomic Local & Git Rollback
 If a hotfix or deploy causes unforeseen regressions, run:

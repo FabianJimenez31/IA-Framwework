@@ -6,12 +6,14 @@ Use this document as a living checklist of technical items to implement. Mark it
 
 ## Implementation Tasks
 
-- [ ] **Phase 0: Corregir deuda preexistente** *(bloquea las fases siguientes)*
-  - [ ] DP-004 — Reemplazar `fi` por `done` en `check-prerequisites.sh:93`; validar con `bash -n` y confirmar que `spec-compliance.yml` pasa por primera vez
-  - [ ] DP-002 — Alimentar `check-file-size.sh` con stdin JSON en `emergency_hotfix.sh:108`, replicando el patrón de `ci-quality-gate.yml:36`
-  - [ ] DP-001 — Implementar `HARNESS_EMERGENCY=1` como archivo de estado leído por los hooks, en lugar del `export` a subshell de `emergency_hotfix.sh:129`
-  - [ ] Unificar la derivación de slug: reemplazar el regex de `pre-commit.sh:26` por `spec_kit_effective_branch_name()` de `common.sh:53`, o alinear ambos regex
-  - [ ] Verificar que `make hotfix` completa el ciclo `crear → validar → aplicar` sin colgarse
+- [x] **Phase 0: Corregir deuda preexistente** *(bloquea las fases siguientes)*
+  - [x] DP-004 — Reemplazar `fi` por `done` en `check-prerequisites.sh:93`; validar con `bash -n` y confirmar que `spec-compliance.yml` pasa por primera vez
+  - [x] DP-002 — Alimentar `check-file-size.sh` con stdin JSON en `emergency_hotfix.sh:108`, replicando el patrón de `ci-quality-gate.yml:36`
+  - [x] DP-001 — Implementar `HARNESS_EMERGENCY=1` como archivo de estado leído por los hooks, en lugar del `export` a subshell de `emergency_hotfix.sh:129`
+  - [x] Unificar la derivación de slug: `pre-commit.sh` delega en `check_feature_branch()` y `spec_kit_effective_branch_name()` de `common.sh`
+  - [x] Verificar que `make hotfix` completa el ciclo `crear → validar → aplicar` sin colgarse
+  - [x] Añadir el prefijo `kiro/` a las tres copias del regex de ramas (`pre-commit.sh`, `.pre-commit-config.yaml`)
+  - [x] Mover el log del suite de `/tmp/harness_tests.log` a `temp/logs/`, conforme a la regla del propio framework
 
 - [ ] **Phase 1: Cliente y fundamentos**
   - [ ] Crear `scripts/memory/engram_client.sh` con `mem_health`, `mem_ensure_daemon`, `mem_write`, `mem_has_topic`
@@ -77,6 +79,6 @@ Use this document as a living checklist of technical items to implement. Mark it
 
 Keep this document up to date to communicate current completion status to the user and agents.
 
-**Estado actual**: Especificación completa. Ninguna fase iniciada.
+**Estado actual**: Fase 0 completada y verificada (12 grupos de prueba). Fases 1-8 pendientes.
 
 **Preguntas abiertas que bloquean fases**: OQ-002 bloquea la Fase 8. OQ-001 y OQ-003 no bloquean nada — se resuelven en una iteración posterior.

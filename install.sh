@@ -74,7 +74,7 @@ fi
 # 6. Add standard ignore patterns to .gitignore
 echo -e "${BLUE}[INFO] Verifying .gitignore rules...${NC}"
 touch .gitignore
-patterns=("temp/debug/" "temp/patches/" "temp/testing/" "*.log" "__pycache__/" "node_modules/")
+patterns=("temp/debug/" "temp/patches/" "temp/testing/" "temp/logs/" "temp/.harness_emergency" "*.log" "__pycache__/" "node_modules/")
 for p in "${patterns[@]}"; do
     if ! grep -qxF "$p" .gitignore; then
         echo "$p" >> .gitignore
