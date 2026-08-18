@@ -107,6 +107,65 @@ Push your branch and open a Pull Request. The **CI Quality Gate** will automatic
 
 ---
 
+## 🧠 Persistent Memory (Engram)
+
+The framework governs *how* software is built. Memory is what keeps *what was learned* from evaporating when a session ends — the decisions taken, the approaches discarded, and whether any of it worked.
+
+Memory is backed by [Engram](https://github.com/Gentleman-Programming/engram) (a single Go binary with SQLite + FTS5) and is **mandatory**: `install.sh` installs it and aborts if it cannot.
+
+### It is written by the harness, not by the agent
+
+Engram is normally driven over MCP, where the agent calls `mem_save` when it remembers to. That cannot be guaranteed and does not survive context compaction. This framework instead writes through Engram's **local HTTP API** from the same git hooks that already block bad commits. The agent reads memory; it is never responsible for saving it.
+
+### Seven classes per task
+
+| Class | Key | Written when |
+|---|---|---|
+| Contextual | Engram session | `make spec-new` |
+| Episodic | Session timeline | Automatically |
+| Semantic | `spec/<slug>/semantic` | `plan.md` is completed |
+| Procedural | `spec/<slug>/procedural` | `tasks.md` is completed |
+| Decision | `spec/<slug>/decision` | Every commit |
+| Preferences | `user/preferences` | The user states a constraint |
+| Outcome | `spec/<slug>/outcome` | Push, CI, or hotfix |
+
+Five of the seven are by-products of artifacts the framework already demands — the slug, `plan.md`, `tasks.md`, the commit message and the test result. Nothing new is asked of the developer.
+
+### Quotas scale with the branch prefix
+
+| Prefix | Required |
+|---|---|
+| `feature/` | All seven |
+| `fix/`, `hotfix/` | Three — decision, outcome, semantic recorded as `bugfix` |
+| `chore/` | One — decision |
+| `test/`, `claude/`, `codex/`, `kiro/` | Session only |
+
+Demanding seven classes from a one-line chore produces ritual filling, and memory filled as a ritual is worse than none: it pollutes future searches with noise that looks like signal.
+
+The gate runs at push time and blocks, exactly like the Spec-Kit Gate. `pre-commit` is deliberately left untouched, so a memory failure can never block a commit through a path you cannot disable.
+
+### Commands
+
+| Command | Purpose |
+|---|---|
+| `make mem-context` | Show what the project already remembers |
+| `make mem-check` | Verify the quota for the current branch (`STAGE=merge` to override) |
+| `make mem-capture` | Capture every state derivable from the working tree |
+| `make mem-doctor` | Diagnose the memory subsystem |
+| `make mem-ingest ARTIFACT=<path>` | Fold a CI outcome artifact into local memory |
+
+### Agents
+
+`install.sh` configures **Claude Code**, **Codex** and **Kiro**. Project-level surfaces are versioned in the repository (`.claude/settings.json`, `AGENTS.md`, `.kiro/steering/`, `.kiro/settings/mcp.json`); machine-level MCP registration is delegated to `engram setup <agent>`.
+
+> **Kiro note:** the steering file instructs Kiro to use this project's `specs/<slug>/` layout instead of generating its own. Kiro's default artifacts collide with the framework's — `tasks.md` is the same filename in both.
+
+### CI
+
+GitHub Actions runners have no Engram store and cannot reach the daemon, which binds to `127.0.0.1`. The CI Quality Gate emits its result as a `ci-outcome` artifact; download it and run `make mem-ingest ARTIFACT=<path>` to fold it into the outcome state.
+
+---
+
 ## ⏩ Operations & Emergency Procedures
 
 IA-Framework comes preloaded with production-tested developer operations scripts.

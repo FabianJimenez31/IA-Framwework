@@ -1,4 +1,12 @@
 # Generated and extended by install.sh
+
+# Generated per project by install.sh from the repository basename. It is
+# deliberately not shipped with the framework: a committed copy would hand every
+# downstream project this repository's name and collapse their memory into the
+# same Engram bucket. In YOUR project, commit it — pinning the name is the whole
+# point, since Engram otherwise resolves the project through six cwd fallbacks.
+.engram/config.json
+
 temp/debug/
 temp/patches/
 temp/testing/
