@@ -65,18 +65,35 @@ fi
 if [ "$EMERGENCY" -eq 1 ]; then
     echo -e "${YELLOW}   ⏭️  Test suite skipped by emergency bypass."
     echo -e "      Run 'make hotfix' -> 'validar' to verify the fix.${NC}"
+    TEST_OUTCOME="skipped"
 elif grep -q "^test:" Makefile 2>/dev/null; then
     echo -e "${BLUE}   Running automated test suite (make test)...${NC}"
     mkdir -p temp/logs
     if make test > temp/logs/harness_tests.log 2>&1; then
         echo -e "${GREEN}   ✅ Test suite PASSED successfully!${NC}"
+        TEST_OUTCOME="passed"
     else
         echo -e "${RED}   ❌ Test suite FAILED. See temp/logs/harness_tests.log for details:${NC}"
         tail -n 20 temp/logs/harness_tests.log
+        TEST_OUTCOME="failed"
         ERRORS=$((ERRORS + 1))
     fi
 else
     echo -e "${YELLOW}   ⚠️  No test suite found in Makefile. Skipping tests check.${NC}"
+    TEST_OUTCOME="unknown"
+fi
+
+# 4. Record the outcome, then verify the memory quota.
+#    Capture runs before the gate so the state it produces is visible to it.
+if [ -x "scripts/memory/capture_stage.sh" ]; then
+    bash scripts/memory/capture_stage.sh outcome "${TEST_OUTCOME:-unknown}" \
+         "temp/logs/harness_tests.log" >/dev/null 2>&1 || true
+fi
+
+if [ -x "scripts/memory/memory_gate.sh" ]; then
+    if ! bash scripts/memory/memory_gate.sh push; then
+        ERRORS=$((ERRORS + 1))
+    fi
 fi
 
 if [ "$ERRORS" -gt 0 ]; then

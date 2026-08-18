@@ -10,6 +10,34 @@ This document guides developers and AI assistants (Claude, GPT, Gemini, etc.) wo
 - `Specification-Driven Development`: Feature branches must have their corresponding design specifications before development. The pre-commit hook verifies that `specs/<slug>/{spec.md,plan.md,tasks.md}` exist and are fully filled out.
 - `No Hardcoded Secrets`: Committing api keys, tokens, or credentials will be blocked by secret scanners.
 
+## 🧠 Memory Protocol
+
+This project has persistent memory through [Engram](https://github.com/Gentleman-Programming/engram). Memory is written by the **harness**, not by the agent: git hooks and agent hooks persist it over Engram's local HTTP API (`127.0.0.1:7437`). Do not rely on remembering to call `mem_save` — that path is not what keeps this memory alive.
+
+**Reading it is your responsibility.** Before drafting a plan, changing architecture, or proposing an approach, search memory for the task slug and for the components you are about to touch. The project has already decided things; re-deciding them is the failure mode this exists to prevent.
+
+Seven classes are tracked per task:
+
+| Class | Key | Written when |
+|---|---|---|
+| Contextual | Engram session | `make spec-new` |
+| Episodic | Session timeline | Automatically |
+| Semantic | `spec/<slug>/semantic` | `plan.md` is completed |
+| Procedural | `spec/<slug>/procedural` | `tasks.md` is completed |
+| Decision | `spec/<slug>/decision` | Every commit |
+| Preferences | `user/preferences` | The user states a constraint |
+| Outcome | `spec/<slug>/outcome` | Push, CI, or hotfix |
+
+Quotas scale with the branch prefix: `feature/` requires all seven, `fix/` and `hotfix/` require three (decision, outcome, semantic recorded as `bugfix`), and `chore/` requires one (decision). The gate runs at push time and blocks, exactly like the Spec-Kit Gate.
+
+When the user states a working constraint that should outlive the session, record it explicitly:
+
+```bash
+bash scripts/memory/capture_stage.sh preferences "<the constraint>"
+```
+
+Inspect memory with `make mem-context`, verify the quota with `make mem-check`, and diagnose the subsystem with `make mem-doctor`.
+
 ## 🏗️ Architecture Summary
 
 - **`src/`**: Primary application source code.
@@ -19,6 +47,7 @@ This document guides developers and AI assistants (Claude, GPT, Gemini, etc.) wo
 - **`tests/`**: Unit, integration, and critical path tests.
 - **`specs/`**: Feature specifications and implementation plans.
 - **`temp/`**: Temporary tools, deployment logs, backups, and scrap files.
+- **`scripts/memory/`**: Engram client, task context, stage capture, and the memory gate.
 
 ## 🛠️ Developer Workflow
 

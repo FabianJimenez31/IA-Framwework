@@ -51,6 +51,34 @@ jobs:
           echo '<?xml version="1.0" ?><coverage version="1.0"></coverage>' > coverage.xml
         fi
 
+    # The runner has no Engram store and cannot reach the daemon, which binds to
+    # 127.0.0.1. The outcome is emitted as an artifact and folded into memory
+    # locally with 'make mem-ingest'.
+    - name: Emit Memory Outcome Artifact
+      if: always()
+      run: |
+        BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+        SLUG="${BRANCH##*/}"
+        mkdir -p temp
+        jq -n \
+          --arg slug    "$SLUG" \
+          --arg branch  "$BRANCH" \
+          --arg commit  "${GITHUB_SHA}" \
+          --arg status  "${{ job.status }}" \
+          --arg run_url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+          --arg detail  "CI quality gate on ${GITHUB_WORKFLOW}" \
+          '{slug:$slug, branch:$branch, commit:$commit, status:$status, run_url:$run_url, detail:$detail}' \
+          > temp/ci-outcome.json
+        cat temp/ci-outcome.json
+
+    - name: Upload Memory Outcome Artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-outcome
+        path: temp/ci-outcome.json
+        if-no-files-found: warn
+
     - name: Check SonarQube Secrets Presence
       id: sonar-secrets
       run: |
