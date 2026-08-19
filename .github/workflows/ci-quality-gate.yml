@@ -37,7 +37,12 @@ jobs:
           fi
         done
 
+    # Only meaningful on pull requests, where there is a source branch to
+    # validate. On a push to main the merge commit has already landed, so the
+    # protected-branch rule reports "direct commits to main are forbidden" and
+    # the step can never pass by construction.
     - name: Run Commit Convention Compliance
+      if: github.event_name == 'pull_request'
       run: |
         chmod +x .claude/hooks/pre-commit.sh
         bash .claude/hooks/pre-commit.sh
