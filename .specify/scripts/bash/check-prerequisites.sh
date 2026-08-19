@@ -27,7 +27,7 @@ CURRENT_BRANCH="main"
 
 if has_git; then
     HAS_GIT_REPO="true"
-    CURRENT_BRANCH=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)
+    CURRENT_BRANCH="$(resolve_branch_name "$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)")"
 fi
 
 # Skip checks for protected or common branches
@@ -90,7 +90,7 @@ if [[ "$CURRENT_BRANCH" =~ ^feature/(.+)$ ]]; then
             log_error "Prerequisite check FAILED for branch '$CURRENT_BRANCH'. Missing or unedited spec documents:"
             for item in "${MISSING_FILES[@]}"; do
                 echo -e "   ${RED}✗ specs/$SLUG/$item${NC}"
-            fi
+            done
             log_warning "💡 Please complete specifications and plans before proceeding."
         fi
         exit 1

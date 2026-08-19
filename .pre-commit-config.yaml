@@ -31,7 +31,7 @@ repos:
       # Enforce branching conventions
       - id: enforce-git-branch-naming
         name: Enforce branch naming conventions
-        entry: bash -c "branch=\$(git rev-parse --abbrev-ref HEAD); if [[ ! \"\$branch\" =~ ^(feature|fix|hotfix|chore|claude|codex|test)/[a-z0-9._/-]+\$ ]] && [[ ! \"\$branch\" =~ ^(main|master|prod|staging|develop)\$ ]]; then echo \"❌ ERROR: Branch name '\$branch' violates convention (feature|fix|hotfix|chore|claude|test)/slug.\" && exit 1; fi"
+        entry: bash -c "branch=\$(git rev-parse --abbrev-ref HEAD); if [[ ! \"\$branch\" =~ ^(feature|fix|hotfix|chore|claude|codex|kiro|test)/[a-z0-9._/-]+\$ ]] && [[ ! \"\$branch\" =~ ^(main|master|prod|staging|develop)\$ ]]; then echo \"❌ ERROR: Branch name '\$branch' violates convention (feature|fix|hotfix|chore|claude|codex|kiro|test)/slug.\" && exit 1; fi"
         language: system
         stages: [commit]
 

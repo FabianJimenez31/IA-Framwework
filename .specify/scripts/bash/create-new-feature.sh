@@ -34,6 +34,22 @@ fi
 BRANCH_NAME="feature/$SLUG"
 SPECS_DIR="$REPO_ROOT/specs/$SLUG"
 
+# Surface what the project already knows about this slug before any template is
+# written. Prior decisions are most useful while the plan is being drafted, not
+# after it has been committed.
+if [ -f "$REPO_ROOT/scripts/memory/engram_client.sh" ]; then
+    # shellcheck source=/dev/null
+    source "$REPO_ROOT/scripts/memory/engram_client.sh"
+    if mem_requires 2>/dev/null && mem_health; then
+        PRIOR="$(mem_search "$SLUG" 5 2>/dev/null | jq -r '[..|objects|select(.title? != null)|.title] | unique | .[]' 2>/dev/null)"
+        if [ -n "$PRIOR" ]; then
+            log_info "Related memory already recorded for '$SLUG':"
+            printf '   - %s\n' $PRIOR
+            echo ""
+        fi
+    fi
+fi
+
 log_info "Creating feature directory: specs/$SLUG"
 mkdir -p "$SPECS_DIR"
 
@@ -84,6 +100,16 @@ if has_git; then
     fi
 else
     log_warning "Not in a Git repository. Skipped Git branch creation."
+fi
+
+# Open the Engram session for this task. Everything captured from here on is
+# grouped under it, which is what makes the episodic timeline reconstructable.
+if [ -x "$REPO_ROOT/scripts/memory/capture_stage.sh" ]; then
+    if bash "$REPO_ROOT/scripts/memory/capture_stage.sh" session-open >/dev/null 2>&1; then
+        log_success "Engram session opened for '$SLUG'"
+    else
+        log_warning "Engram session could not be opened; run 'make mem-doctor' to diagnose."
+    fi
 fi
 
 log_success "Feature '$SLUG' successfully initialized! 🚀"

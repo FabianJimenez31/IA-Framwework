@@ -10,6 +10,34 @@ This document guides developers and AI assistants (Claude, GPT, Gemini, etc.) wo
 - `Specification-Driven Development`: Feature branches must have their corresponding design specifications before development. The pre-commit hook verifies that `specs/<slug>/{spec.md,plan.md,tasks.md}` exist and are fully filled out.
 - `No Hardcoded Secrets`: Committing api keys, tokens, or credentials will be blocked by secret scanners.
 
+## 🧠 Memory Protocol
+
+This project has persistent memory through [Engram](https://github.com/Gentleman-Programming/engram). Memory is written by the **harness**, not by the agent: git hooks and agent hooks persist it over Engram's local HTTP API (`127.0.0.1:7437`). Do not rely on remembering to call `mem_save` — that path is not what keeps this memory alive.
+
+**Reading it is your responsibility.** Before drafting a plan, changing architecture, or proposing an approach, search memory for the task slug and for the components you are about to touch. The project has already decided things; re-deciding them is the failure mode this exists to prevent.
+
+Seven classes are tracked per task:
+
+| Class | Key | Written when |
+|---|---|---|
+| Contextual | Engram session | `make spec-new` |
+| Episodic | Session timeline | Automatically |
+| Semantic | `spec/<slug>/semantic` | `plan.md` is completed |
+| Procedural | `spec/<slug>/procedural` | `tasks.md` is completed |
+| Decision | `spec/<slug>/decision` | Every commit |
+| Preferences | `user/preferences` | The user states a constraint |
+| Outcome | `spec/<slug>/outcome` | Push, CI, or hotfix |
+
+Quotas scale with the branch prefix: `feature/` requires all seven, `fix/` and `hotfix/` require three (decision, outcome, semantic recorded as `bugfix`), and `chore/` requires one (decision). The gate runs at push time and blocks, exactly like the Spec-Kit Gate.
+
+When the user states a working constraint that should outlive the session, record it explicitly:
+
+```bash
+bash scripts/memory/capture_stage.sh preferences "<the constraint>"
+```
+
+Inspect memory with `make mem-context`, verify the quota with `make mem-check`, and diagnose the subsystem with `make mem-doctor`.
+
 ## 🏗️ Architecture Summary
 
 - **`src/`**: Primary application source code.
@@ -19,6 +47,7 @@ This document guides developers and AI assistants (Claude, GPT, Gemini, etc.) wo
 - **`tests/`**: Unit, integration, and critical path tests.
 - **`specs/`**: Feature specifications and implementation plans.
 - **`temp/`**: Temporary tools, deployment logs, backups, and scrap files.
+- **`scripts/memory/`**: Engram client, task context, stage capture, and the memory gate.
 
 ## 🛠️ Developer Workflow
 
@@ -33,5 +62,6 @@ This document guides developers and AI assistants (Claude, GPT, Gemini, etc.) wo
 - **Database-Code Enum Sincronización:** Run `make validate-enums` to verify that real database records are fully aligned with raw code Enum specifications before merging.
 - **Nginx Config Sanity Gate:** Run `make lint-nginx` to check active configurations and prevent localhost upstream networking bugs in routing layers.
 - **Frontend SPA Deploy Smoke Tester:** Run `make smoke-test` after deployment to ensure that all endpoints are live, bundles are responsive, and chunk versions are atomic (no partial deploys).
-- **Incident & Emergency Hotfixes:** In production crises, declare structured hotfixes with `make hotfix`. It automatically generates documentation templates in `temp/emergency_logs/`, captures safety state snapshots in `temp/backup/`, and activates the `HARNESS_EMERGENCY=1` bypass.
+- **Incident & Emergency Hotfixes:** In production crises, declare structured hotfixes with `make hotfix`. It automatically generates documentation templates in `temp/emergency_logs/`, captures safety state snapshots in `temp/backup/`, and arms the emergency bypass.
+- **Emergency Bypass Scope:** The bypass is persisted to `temp/.harness_emergency` with a 2-hour TTL (override with `HARNESS_EMERGENCY_TTL`), or forced ad hoc with `HARNESS_EMERGENCY=1` in the environment. It suspends **workflow gates only** — protected-branch blocks, branch naming, the Spec-Kit Gate, root-scratch-file checks, the architecture validator and the test suite. **Safety gates stay enforced**: hardcoded-secret scanning and the file-size limits are never skipped. An incident is a reason to skip process, never a reason to leak a credential. Re-arm every gate with `make emergency-clear`.
 - **Atomic Rollback & Recovery:** Revert broken changes with `make rollback`. It lists git safety tags and workspace patches. Run `scripts/deployment/rollback.sh apply <target>` to safely restore workspace state.
