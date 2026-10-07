@@ -83,7 +83,14 @@ else
     TEST_OUTCOME="unknown"
 fi
 
-# 4. Record the outcome, then verify the memory quota.
+# 4. Validate versioned local observability evidence. Never query AWS here.
+if [ -f "scripts/observability/evidence.py" ]; then
+    if ! python3 scripts/observability/evidence.py observability.evidence.json --stage local; then
+        ERRORS=$((ERRORS + 1))
+    fi
+fi
+
+# 5. Record the outcome, then verify the memory quota.
 #    Capture runs before the gate so the state it produces is visible to it.
 if [ -x "scripts/memory/capture_stage.sh" ]; then
     bash scripts/memory/capture_stage.sh outcome "${TEST_OUTCOME:-unknown}" \

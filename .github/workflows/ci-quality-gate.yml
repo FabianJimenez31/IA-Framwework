@@ -51,7 +51,7 @@ jobs:
       run: |
         if [ -f "pytest.ini" ] || [ -d "tests" ]; then
           set +e
-          pytest --cov=src --cov-report=xml
+          pytest --cov=src --cov=scripts/observability --cov-report=xml
           status=$?
           set -e
           # Exit code 5 is "no tests were collected". A freshly installed
@@ -69,6 +69,24 @@ jobs:
           echo "No tests found. Generating dummy coverage.xml..."
           echo '<?xml version="1.0" ?><coverage version="1.0"></coverage>' > coverage.xml
         fi
+
+    - name: Observability layer offline tests and coverage
+      run: |
+        mkdir -p temp/testing
+        pytest tests/test_observability.py --cov=scripts/observability --cov-branch --cov-fail-under=95 --cov-report=term-missing --cov-report=xml:temp/testing/observability-coverage.xml
+        make observability-check ARTIFACT=observability.evidence.json STAGE=local
+      # AWS and Engram are not accessed here. Runtime acceptance is post-deploy.
+
+    - name: Upload Offline Observability Evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: observability-local
+        path: |
+          observability.evidence.json
+          temp/testing/observability-coverage.xml
+        if-no-files-found: error
+        retention-days: 7
 
     # The runner has no Engram store and cannot reach the daemon, which binds to
     # 127.0.0.1. The outcome is emitted as an artifact and folded into memory

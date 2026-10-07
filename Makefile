@@ -3,7 +3,7 @@
 # Stage evaluated by 'make mem-check'. Override with: make mem-check STAGE=merge
 STAGE ?= push
 
-.PHONY: init-harness dev-check spec-new test clean sonar-check lint-nginx smoke-test validate-enums hotfix emergency-clear rollback mem-context mem-check mem-capture mem-doctor mem-ingest help
+.PHONY: init-harness dev-check spec-new test clean sonar-check lint-nginx smoke-test validate-enums hotfix emergency-clear rollback mem-context mem-check mem-capture mem-doctor mem-ingest help observability-check observability-test
 
 help:
 	@echo "======================================================================"
@@ -13,6 +13,8 @@ help:
 	@echo "  make dev-check      - Run local pre-commit checks (simulate Git hooks)"
 	@echo "  make spec-new       - Interactively create a new spec-driven feature branch"
 	@echo "  make test           - Execute automated test suite"
+	@echo "  make observability-test - Run offline log/response/receipt tests (no AWS writes)"
+	@echo "  make observability-check ARTIFACT=<json> STAGE=local|runtime - Verify safe evidence"
 	@echo "  make lint-nginx     - [NEW] Validate Nginx upstream patterns for IPv6 hazards"
 	@echo "  make smoke-test     - [NEW] Run SPA deployment atomicity smoke tests"
 	@echo "  make validate-enums - [NEW] Run code enums vs database values validator"
@@ -46,6 +48,14 @@ test:
 	else \
 		echo "pytest not installed. Create a virtual environment and run 'pip install pytest'."; \
 	fi
+
+observability-test:
+	@python3 -m unittest discover -s tests -p 'test_observability*.py'
+
+observability-check:
+	@test -n "$(ARTIFACT)" || (echo "Provide ARTIFACT=<safe-evidence.json>" && exit 2)
+	@test "$(STAGE)" = local -o "$(STAGE)" = runtime || (echo "Provide STAGE=local or STAGE=runtime" && exit 2)
+	@python3 scripts/observability/evidence.py "$(ARTIFACT)" --stage "$(STAGE)"
 
 lint-nginx:
 	@chmod +x scripts/harness/lint_nginx.sh
@@ -96,4 +106,3 @@ sonar-check:
 clean:
 	@chmod +x .claude/hooks/smart-cleanup.sh
 	@bash .claude/hooks/smart-cleanup.sh
-

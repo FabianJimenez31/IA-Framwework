@@ -38,6 +38,26 @@ bash scripts/memory/capture_stage.sh preferences "<the constraint>"
 
 Inspect memory with `make mem-context`, verify the quota with `make mem-check`, and diagnose the subsystem with `make mem-doctor`.
 
+## Observability evidence layer (mandatory for runtime changes)
+
+- Follow [docs/observability.md](docs/observability.md): compare source-of-truth expected
+  result, actual response meaning and correlated JSON business-outcome logs. Transport
+  success/COMPLETED and configured awslogs never prove correctness or persistence.
+- Reuse existing request-ID/logging infrastructure. No PII, customer IDs, tokens, bodies
+  or conversational content in logs, evidence or Engram.
+- Specs define named happy/sad contract and grounding tests. Keep existing tests,
+  coverage and Sonar gates; disclose disabled/skipped gates instead of calling them green.
+- Each runtime PR updates safe local `observability.evidence.json`; pre-push/CI run the
+  checker. `make observability-check ARTIFACT=<json> STAGE=local` yields LOCAL_ONLY.
+- After an approved deployment, obtain real startup/completion CloudWatch receipts
+  with exact build, service, environment, request ID and bounded UTC window. Save only
+  a sanitized debug diagnosis in Engram; verify by readback and search. Runtime acceptance
+  remains open until `STAGE=runtime` passes. Explicit N/A is for libraries without runtime,
+  not a waiver of acceptance in affected deployed consumers. Never copy the framework's N/A.
+- Agent memory writes require the runtime identity registered by the host. If unavailable
+  or unconfirmed, keep memory pending; do not create/select another session or invoke
+  write hooks/CLI substitutes. This overrides automated memory capture for agent runs.
+
 ## 🏗️ Architecture Summary
 
 - **`src/`**: Primary application source code.
