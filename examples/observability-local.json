@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "service": "example-api",
+  "version": "abc1234",
+  "environment": "uat",
+  "applicability": "runtime",
+  "startup": {
+    "event": "startup",
+    "service": "example-api",
+    "version": "abc1234",
+    "environment": "uat",
+    "time": "2026-10-07T15:00:00Z",
+    "level": "info",
+    "logLevel": "info"
+  },
+  "startupCloudwatch": null,
+  "scenarios": [
+    {
+      "name": "dependency-timeout",
+      "expected": {
+        "outcome": "unavailable",
+        "resultCode": "DEPENDENCY_UNAVAILABLE"
+      },
+      "response": {
+        "outcome": "unavailable",
+        "resultCode": "DEPENDENCY_UNAVAILABLE"
+      },
+      "contractTest": "tests/timeout.spec.ts",
+      "groundingTest": "tests/grounding.spec.ts",
+      "contractPassed": true,
+      "groundingPassed": true,
+      "completion": {
+        "event": "request.completed",
+        "service": "example-api",
+        "version": "abc1234",
+        "environment": "uat",
+        "time": "2026-10-07T15:00:00Z",
+        "level": "info",
+        "requestId": "b16b7879-bbc9-4b27-af3e-3a0a3d74560f",
+        "method": "GET",
+        "route": "/wallet",
+        "statusCode": 200,
+        "durationMs": 12,
+        "outcome": "unavailable",
+        "resultCode": "DEPENDENCY_UNAVAILABLE"
+      },
+      "cloudwatch": null
+    }
+  ],
+  "engram": null
+}

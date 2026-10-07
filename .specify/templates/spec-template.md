@@ -72,3 +72,13 @@
 ## Open Questions
 
 - [Question for user regarding business rule or design ambiguity]
+
+## Observability acceptance (mandatory for runtime changes)
+
+- Source of truth, expected response meaning and safe outcome/result codes:
+- Named happy/sad contract and grounding tests, including fallback/unavailable:
+- Request-ID propagation and JSON logs without sensitive data:
+- Local evidence artifact or justified non-runtime/non-impact scope:
+- Post-deploy CloudWatch startup/completion verification and Engram readback/search owner:
+
+Use docs/observability.md. HTTP success alone is not business success.

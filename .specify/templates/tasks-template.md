@@ -34,3 +34,12 @@ Use this document as a living checklist of technical items to implement. Mark it
 ## Progress Tracking
 
 Keep this document up to date to communicate current completion status to the user and agents.
+
+## Observability layer tasks
+
+- [ ] Write happy/sad source-grounding and response/log contract tests before implementation.
+- [ ] Update safe local observability.evidence.json and run STAGE=local.
+- [ ] Verify existing specs/tests/coverage/Sonar gates; disclose skipped/disabled results.
+- [ ] After approved deploy, collect exact-build startup/completion CloudWatch receipts.
+- [ ] Save sanitized debug diagnosis to the confirmed Engram runtime session.
+- [ ] Verify observation readback/search and run STAGE=runtime, or report pending/N/A honestly.

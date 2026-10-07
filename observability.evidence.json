@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "service": "ia-framework",
+  "version": "observability-layer-v1",
+  "environment": "test",
+  "applicability": "library_without_runtime",
+  "reason": "Reusable harness with no deployed process; consumer runtime acceptance is required. Do not copy this N/A into services.",
+  "startup": null,
+  "startupCloudwatch": null,
+  "scenarios": [],
+  "engram": null
+}

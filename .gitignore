@@ -14,6 +14,9 @@ temp/logs/
 temp/.harness_emergency
 temp/.engram_session
 temp/ci-outcome.json
+.coverage
+coverage.xml
+.pytest_cache/
 *.log
 __pycache__/
 node_modules/

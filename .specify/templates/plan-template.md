@@ -45,3 +45,13 @@ Detailed plan of how the changes will be verified locally and remotely.
 
 ### Rollback Plan
 - Steps to revert if a failure is detected (e.g. Git rollback commands, database backups).
+
+## Observability verification plan
+
+- Reused middleware/logger and allowed metadata fields:
+- Tests comparing source result, response and completion outcome:
+- Local evidence validation command and existing Sonar/coverage gate status:
+- Authorized CloudWatch group, deployed build, bounded UTC windows, receipt collection:
+- Sanitized Engram diagnosis topic, readback/search and unresolved acceptance owner:
+
+CI mocks external systems. No automatic UAT business/database calls or raw payload storage.

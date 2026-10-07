@@ -245,3 +245,15 @@ To customize Sonar scanner properties (e.g. project name, file inclusions/exclus
 ## 📄 License
 
 This framework is open-source software licensed under the [MIT License](LICENSE).
+
+## Observability evidence layer
+
+The new layer connects expected business results, actual responses, structured logs,
+CloudWatch receipts and searchable Engram diagnoses without logging customer content.
+Existing specs/tests/coverage/Sonar remain in force. Pre-push/CI validate versioned safe
+local evidence; runtime acceptance is a distinct post-deploy step, never implied by CI.
+The framework's own evidence is explicit library N/A (it has no deployed process).
+**Adopting services must replace that declaration**, define happy/sad scenarios and
+verify actual runtime logs. This change does not automatically retrofit existing ports.
+
+See [the workflow, log profile and commands](docs/observability.md).
