@@ -1,0 +1,37 @@
+{
+  "lanes": [
+    {
+      "name": "frontend",
+      "paths": ["frontend/"],
+      "deploy": ["--frontend"]
+    },
+    {
+      "name": "backend",
+      "default": true,
+      "paths": ["src/"],
+      "deploy": ["--backend"]
+    }
+  ],
+  "neutral_prefixes": [
+    "docs/",
+    "specs/",
+    "agents/",
+    "temp/",
+    ".agents/",
+    ".claude/",
+    ".kiro/",
+    ".specify/",
+    ".engram/",
+    ".github/",
+    "infra/sonarqube/"
+  ],
+  "neutral_files": ["skills-lock.json", ".gitignore", "LICENSE"],
+  "neutral_root_extensions": [".md"],
+  "test_only_prefixes": ["tests/"],
+  "pipeline_paths": [
+    ".github/workflows/ci-quality-gate.yml",
+    "scripts/harness/ci_lanes.py",
+    "scripts/harness/lanes.json",
+    "sonar-project.properties"
+  ]
+}

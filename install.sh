@@ -37,7 +37,7 @@ echo -e "${BLUE}[INFO] Setting up directory structures...${NC}"
 mkdir -p specs
 mkdir -p temp/debug temp/patches temp/testing temp/backup temp/emergency_logs
 mkdir -p src tests
-mkdir -p scripts/validation scripts/harness scripts/deployment
+mkdir -p scripts/validation scripts/harness scripts/deployment scripts/dev
 
 # 3. Configure file permissions
 echo -e "${BLUE}[INFO] Configuring execute permissions for scripts...${NC}"

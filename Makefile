@@ -3,7 +3,7 @@
 # Stage evaluated by 'make mem-check'. Override with: make mem-check STAGE=merge
 STAGE ?= push
 
-.PHONY: init-harness dev-check spec-new test clean sonar-check lint-nginx smoke-test validate-enums hotfix emergency-clear rollback mem-context mem-check mem-capture mem-doctor mem-ingest help
+.PHONY: init-harness dev-check spec-new test clean sonar-check lint-nginx smoke-test validate-enums hotfix emergency-clear rollback mem-context mem-check mem-capture mem-doctor mem-ingest lanes web-guidance help
 
 help:
 	@echo "======================================================================"
@@ -24,6 +24,8 @@ help:
 	@echo "  make mem-doctor     - [NEW] Diagnose the Engram memory subsystem"
 	@echo "  make mem-ingest     - [NEW] Ingest a CI outcome artifact into local memory"
 	@echo "  make rollback       - [NEW] List rollback safe points or revert changes"
+	@echo "  make lanes          - [NEW] Show which CI/deploy lanes your branch touches"
+	@echo "  make web-guidance   - [NEW] Install the Modern Web Guidance skill (web UI projects)"
 	@echo "  make sonar-check    - Execute local SonarQube scanner & Quality Gate check"
 	@echo "  make clean          - Run smart cleanup of temporary log and backup files"
 	@echo "======================================================================"
@@ -88,6 +90,19 @@ emergency-clear:
 rollback:
 	@chmod +x scripts/deployment/rollback.sh
 	@bash scripts/deployment/rollback.sh list
+
+# BASE is the ref your branch is compared against. Override: make lanes BASE=origin/develop
+BASE ?= origin/main
+
+lanes:
+	@echo "CI lanes:"
+	@python3 scripts/harness/ci_lanes.py --mode ci --base $(BASE) --head HEAD
+	@echo "Deploy:"
+	@python3 scripts/harness/ci_lanes.py --mode deploy --base $(BASE) --head HEAD
+
+web-guidance:
+	@chmod +x scripts/dev/mwg.sh
+	@bash scripts/dev/mwg.sh install
 
 sonar-check:
 	@chmod +x sonar_local.sh
