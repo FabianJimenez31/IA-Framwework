@@ -15,7 +15,8 @@ Perfect for modern engineering teams and developers paired with AI coding assist
     *   Validates Git Flow branch naming conventions (`feature/`, `fix/`, `hotfix/`, `chore/`).
     *   Scans diffs for hardcoded secrets, api keys, and private tokens.
     *   Forces cleanup of temporary Python/shell scripts in the repository root.
-*   **Boilerplate CI/CD Quality Gates:** Generic GitHub Actions workflows to validate file sizes, branch naming, and run automated test suites on every Pull Request.
+*   **Lane-Based CI/CD Quality Gates:** GitHub Actions workflows that validate and deploy only what a change touches. A frontend-only change does not run the backend suite or restart the backend; a docs-only change deploys nothing. Lanes are declared in one JSON file.
+*   **Modern Web Guidance for Agents:** One command installs Google Chrome's up-to-date web platform guidance as an agent skill, with a wrapper that handles its Node requirement.
 *   **Advanced Operations & Harness Suite:**
     *   **Nginx Upstream Linter:** Blocks IPv6 connection lottery hazards in proxy/upstream routing configurations (localhost loops).
     *   **Frontend SPA Smoke Tester:** Guarantees atomic deployment states, ensuring that all SPA routes are up and reference identical static bundle versions.
@@ -37,7 +38,8 @@ Perfect for modern engineering teams and developers paired with AI coding assist
 ├── .github/workflows/                # 🔗 CI/CD pipeline quality gates
 ├── scripts/                          # ⏩ Custom project-specific validation & ops
 │   ├── validation/                   # Architecture & Database-enum consistency validators
-│   ├── harness/                      # Web server & Deployment smoke checkers
+│   ├── harness/                      # CI lane classifier, web server & deployment smoke checkers
+│   ├── dev/                          # Developer tooling (Modern Web Guidance wrapper)
 │   └── deployment/                   # Standard emergency hotfix & rollback scripts
 ├── temp/                             # 📂 Organized playground for scrap/logs
 ├── .pre-commit-config.yaml          # 🔗 Git pre-commit framework config
@@ -217,6 +219,67 @@ To apply a rollback, execute:
 ./scripts/deployment/rollback.sh apply <tag_or_patch_file>
 ```
 This safely reverts files while capturing a safety backup of your current state.
+
+---
+
+## 🛤️ Lane-Based CI
+
+A pipeline that runs everything on every change gets slow, and a slow pipeline gets bypassed. This one runs each check once, only where it applies.
+
+`scripts/harness/ci_lanes.py` reads the changed files and the lanes declared in `scripts/harness/lanes.json`, and each CI job runs only if its lane is active:
+
+| Change touches | CI runs | Deploy flags |
+|---|---|---|
+| `frontend/` | Frontend build + tests, Sonar | `--frontend` |
+| `src/` or anything unclassified | Backend tests, Sonar | `--backend` |
+| Only `tests/` | The lane's tests | none |
+| Only docs, specs, agent config | Conventions | none |
+| The workflow or the lane config | Every lane | none |
+
+Three defaults keep it safe: an unclassified path falls into the default lane, a change to the pipeline itself runs every lane, and when the diff cannot be computed everything runs and deploy falls back to `--all`.
+
+```bash
+make lanes                 # which lanes does my branch touch?
+make lanes BASE=origin/develop
+```
+
+### Adapting the lanes
+
+Edit `scripts/harness/lanes.json`. Each lane has a `name`, the path prefixes that belong to it, and the flags your deploy script takes for it. Mark one lane as `default` to catch unclassified paths. Add a job to `.github/workflows/ci-quality-gate.yml` with `if: needs.changes.outputs.<lane> == 'true'` for each new lane.
+
+### Deploying by lane
+
+The framework ships no deploy job, because deployment is project-specific. In yours, compute the flags from the pushed range and pass them to your script:
+
+```yaml
+- id: lanes
+  run: >-
+    python3 scripts/harness/ci_lanes.py --mode deploy
+    --base "${{ github.event.before }}" --head "${{ github.sha }}"
+- if: steps.lanes.outputs.flags != ''
+  run: ./deploy.sh ${{ steps.lanes.outputs.flags }}
+```
+
+### Test efficiency
+
+*   **One check, once.** Locally, run what you touched. In CI, the full suite of each touched lane runs a single time and also produces the coverage report.
+*   **Coverage on new code: 80%.** The reference gate is in `infra/sonarqube/quality-gate.json`. It evaluates new code only; apply it in your SonarQube server.
+*   **Tests never deploy.** A change under `tests/` is validated but restarts nothing.
+
+---
+
+## 🌐 Modern Web Guidance
+
+For projects with a web UI. Models learn the web as it was at training time; [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) gives agents current practice for dialogs, forms, tables, accessibility, dark mode, animation and performance.
+
+```bash
+make web-guidance                                   # install the skill for your agents
+scripts/dev/mwg.sh search "light dismiss dialog"    # find a guide
+scripts/dev/mwg.sh retrieve "dialog"                # read it
+scripts/dev/mwg.sh legacy-scan frontend/src --json  # find legacy patterns
+```
+
+The CLI requires Node 22 or newer. `scripts/dev/mwg.sh` picks a compatible Node (the active one, or the newest installed through nvm) without touching the version your project pins, and keeps the CLI's telemetry off. The usage rules for agents are in `CLAUDE.md` / `AGENTS.md`.
 
 ---
 

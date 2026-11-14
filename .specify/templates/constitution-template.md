@@ -9,6 +9,8 @@ This document guides developers and AI assistants (Claude, GPT, Gemini, etc.) wo
 - `Feature Branch Convention`: All development must be done on branches starting with standard prefixes: `(feature|fix|hotfix|chore|claude|test)/[name]`. Direct push/commit to `main`, `master`, or `develop` is strictly blocked.
 - `Specification-Driven Development`: Feature branches must have their corresponding design specifications before development. The pre-commit hook verifies that `specs/<slug>/{spec.md,plan.md,tasks.md}` exist and are fully filled out.
 - `No Hardcoded Secrets`: Committing api keys, tokens, or credentials will be blocked by secret scanners.
+- `One Check, Once`: Every verification runs a single time, in the cheapest place that can catch the problem. Before pushing, run what your change touches (`make lanes` tells you which lanes those are), not the whole suite; CI runs the full suite of each touched lane once. Do not re-run locally what CI is about to run, and do not make CI run lanes the change did not touch.
+- `Coverage on New Code (80%)`: The Quality Gate requires 80% coverage on new or modified code. The margin is for lines not worth a test (defensive branches, purely visual changes), never for leaving new logic untested.
 
 ## 🧠 Memory Protocol
 
@@ -37,6 +39,35 @@ bash scripts/memory/capture_stage.sh preferences "<the constraint>"
 ```
 
 Inspect memory with `make mem-context`, verify the quota with `make mem-check`, and diagnose the subsystem with `make mem-doctor`.
+
+## 🛤️ CI Lanes
+
+The pipeline validates and deploys only what a change touches. `scripts/harness/ci_lanes.py` classifies the changed files into the lanes declared in `scripts/harness/lanes.json`:
+
+| Change touches | CI runs | Deploy |
+|---|---|---|
+| Only the frontend lane | Frontend build + tests, Sonar | Frontend only |
+| Only the backend lane | Backend tests, Sonar | Backend only |
+| Only `tests/` | The lane's tests | Nothing |
+| Only docs, specs or agent config | Conventions | Nothing |
+| The pipeline itself | Every lane | Nothing |
+
+Rules that keep this safe:
+
+- **Unknown is backend.** A path nobody classified falls into the default lane instead of skipping validation.
+- **No diff, everything.** If the diff cannot be computed, every lane runs and deploy uses `--all`.
+- **Adapt the config, not the code.** New service or directory → add a lane or a prefix to `lanes.json`.
+
+Check locally with `make lanes`. A deploy job reads the flags with `python3 scripts/harness/ci_lanes.py --mode deploy --base <previous sha> --head <new sha>`.
+
+## 🌐 Modern Web Guidance (projects with a web UI)
+
+Web platform APIs change faster than model training data. When the project has a web frontend, install the [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) skill with `make web-guidance` and consult it **before** writing or changing HTML, CSS or client-side JS (dialogs, forms, tables, accessibility, dark mode, animation, performance). It does not apply to backend, infrastructure, tooling or tests.
+
+- Always call it through `scripts/dev/mwg.sh`: the CLI needs Node >= 22 and the wrapper picks a compatible one without changing the project's pinned version. Telemetry stays off.
+- `scripts/dev/mwg.sh search "<2–5 words, one capability>"`, then `scripts/dev/mwg.sh retrieve "<id>"`, then check the code against the guide.
+- **Browser support:** Baseline Widely available features need no fallback. Newly available ones are allowed only with the fallback the guide gives or with feature detection and clean degradation. No new polyfill dependencies without approval.
+- Close the response with a `### Modern Web Guidance` section naming each guide applied and the non-obvious choice it imposed.
 
 ## 🏗️ Architecture Summary
 

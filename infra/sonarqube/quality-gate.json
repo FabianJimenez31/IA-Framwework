@@ -1,0 +1,18 @@
+{
+  "name": "IA-Framework",
+  "description": "Reference Quality Gate. Evaluates new code only: 80% coverage, no new bugs or vulnerabilities, A ratings.",
+  "conditions": [
+    { "metric": "new_coverage", "op": "LT", "error": "80" },
+    { "metric": "new_bugs", "op": "GT", "error": "0" },
+    { "metric": "new_vulnerabilities", "op": "GT", "error": "0" },
+    { "metric": "new_security_hotspots_reviewed", "op": "LT", "error": "100" },
+    { "metric": "new_duplicated_lines_density", "op": "GT", "error": "3" },
+    { "metric": "new_maintainability_rating", "op": "GT", "error": "1" },
+    { "metric": "new_reliability_rating", "op": "GT", "error": "1" },
+    { "metric": "new_security_rating", "op": "GT", "error": "1" }
+  ],
+  "notes": {
+    "where_it_lives": "This file is the versioned definition. The live gate is configured in the SonarQube server (Quality Gates), by hand or through its API.",
+    "why_80": "100% on new code turns mechanical changes (styling, defensive branches) into test-writing chores and pushes teams to disable the gate. 80% keeps new logic tested and leaves room for lines not worth a test."
+  }
+}
